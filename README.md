@@ -159,6 +159,7 @@ Optional:
 
 ```toml
 main.plugins.iphone_gps.use_last_loc = true
+main.plugins.iphone_gps.compact_view = true
 main.plugins.linespacing = 15
 ```
 
