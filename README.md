@@ -214,4 +214,4 @@ main.plugins.aftershake.orientation = "vertical"
 
 ## License
 
-This repository is licensed under the GPL 3 license.
+Licensed under the [MIT License](./LICENSE).

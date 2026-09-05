@@ -28,7 +28,7 @@ from pwnagotchi.ui.view import BLACK
 class iPhoneGPS(plugins.Plugin):
     __author__ = "xentrify"
     __version__ = "1.0.1"
-    __license__ = "GPL3"
+    __license__ = "MIT"
     __description__ = "Saves GPS coordinates whenever an handshake is captured. Uses your iPhone's GPS via website requests and Shortcuts."
     # credits to:
     # - evilsocket@gmail.com (Original GPS plugin)

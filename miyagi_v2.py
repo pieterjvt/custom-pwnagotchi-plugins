@@ -16,7 +16,7 @@ from flask import render_template_string
 class Miyagi(plugins.Plugin):
     __author__ = 'Sniffleupagus'
     __version__ = '1.0.0'
-    __license__ = 'GPL3'
+    __license__ = 'MIT'
     __description__ = "Manage AI training. Pwn on. Pwn off. (just kidding. always b pwn'in'!)"
 
     LINE_SPACING = 8 # set to my sweetspot lol

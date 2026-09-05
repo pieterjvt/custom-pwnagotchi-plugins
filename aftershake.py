@@ -55,7 +55,7 @@ class afterShake(plugins.Plugin):
     # - @nagy_craig (display-password)
 
     __version__ = '1.0.1'
-    __license__ = 'GPL3'
+    __license__ = 'MIT'
     __description__ = 'A plugin that handles everything after a handshake. AircrackOnly, Hashie, Quickdic, etc. All in one.'
 
     def __init__(self):
