@@ -15,9 +15,9 @@ from pwnagotchi import plugins
 
 
 class RemoteCracking(plugins.Plugin):
-    __author__ = "xentrify"
+    __author__ = "pieterjvt"
     __version__ = "1.0.0"
-    __license__ = "GPL3"
+    __license__ = "MIT"
     __description__ = "This plugin automatically uploads handshakes to your FTP cracking server."
     # credits to:
     # - junohea.mail@gmail.com (hashie-hcxpcapngtool)

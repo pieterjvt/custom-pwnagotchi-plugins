@@ -48,14 +48,14 @@ from pwnagotchi.ui.view import BLACK
 import pwnagotchi.ui.fonts as fonts
 
 class afterShake(plugins.Plugin):
-    __author__ = 'xentrify'
+    __author__ = 'pieterjvt'
     # credits to:
     # - junohea.mail@gmail.com (hashie-hcxpcapngtool)
     # - pwnagotchi@rossmarks.uk (quickdic AND AircrackOnly)
     # - @nagy_craig (display-password)
 
     __version__ = '1.0.1'
-    __license__ = 'GPL3'
+    __license__ = 'MIT'
     __description__ = 'A plugin that handles everything after a handshake. AircrackOnly, Hashie, Quickdic, etc. All in one.'
 
     def __init__(self):
