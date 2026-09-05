@@ -4,6 +4,7 @@
 # Config:
 #   main.plugins.iphone_gps.enabled = true
 #   [OPTIONAL] main.plugins.iphone_gps.use_last_loc = true (default: false)
+#   [OPTIONAL] main.plugins.iphone_gps.compact_view = true (default: false)
 #   [OPTIONAL] main.plugins.linespacing = 15 (default: 10)
 #####
 # Requirements:
@@ -18,6 +19,7 @@
 import json
 import logging
 from flask import jsonify
+from datetime import datetime, UTC
 
 import pwnagotchi.plugins as plugins
 import pwnagotchi.ui.fonts as fonts
@@ -27,7 +29,7 @@ from pwnagotchi.ui.view import BLACK
 
 class iPhoneGPS(plugins.Plugin):
     __author__ = "pieterjvt"
-    __version__ = "1.0.1"
+    __version__ = "1.1.1"
     __license__ = "MIT"
     __description__ = "Saves GPS coordinates whenever an handshake is captured. Uses your iPhone's GPS via website requests and Shortcuts."
     # credits to:
@@ -41,6 +43,7 @@ class iPhoneGPS(plugins.Plugin):
         self.coordinates = dict()
         self.options = dict()
         self.use_last_loc = False
+        self.compact_view = False
 
     def on_webhook(self, path, request):
         if not self.running:
@@ -54,43 +57,45 @@ class iPhoneGPS(plugins.Plugin):
                     cords["Latitude"] = float(request.args.get("lat"))
                     cords["Longitude"] = float(request.args.get("lon"))
                     cords["Altitude"] = float(request.args.get("alt").replace(",", "."))
+                    cords["Updated"] = datetime.now(UTC).isoformat()
+                    cords["Accuracy"] = 10  # Arbitrary value for 10 meters but mandatory for wigle plugin
                     self.coordinates = cords
                     logging.info(f"[iPhone-GPS] Updated coordinates to: ({cords})")
-                    if self.stop:
-                        return "stop"
-                    else:
-                        return ""
 
                 except Exception as exc:
                     logging.info(f"[iPhone-GPS] An error occured while handling the webhook request: {exc}")
-                    if self.stop:
-                        return "stop"
-                    else:
-                        return ""
+
+                if self.stop:
+                    return "stop"
+
             elif path.startswith("get_gps"):
-                if self.coordinates and all(["Latitude" in self.coordinates.keys(), "Longitude" in self.coordinates.keys(), "Altitude" in self.coordinates.keys()]):
-                    if self.stop:
-                        if "use_last_loc" in self.options:
-                            if self.options["use_last_loc"]:
-                                return jsonify(self.coordinates)
-                            else:
-                                return jsonify({})
-                        else:
-                            return jsonify({})
-                    else:
-                        return jsonify(self.coordinates)
-                else:
-                    return jsonify({})
+                if self.coordinates and all([
+                    "Latitude" in self.coordinates.keys(),
+                    "Longitude" in self.coordinates.keys(),
+                    "Altitude" in self.coordinates.keys()
+                ]):
+                    if self.stop and not self.options.get("use_last_loc", False):
+                        return jsonify({})
+
+                    return jsonify(self.coordinates)
+
+                return jsonify({})
 
             elif "stop" in path:
                 logging.info("[iPhone-GPS] Stopping...")
                 self.stop = True
-                return ""
-            else:
-                return ""
+
+        return ""
 
     def on_loaded(self):
         logging.info("[iPhone-GPS] Plugin loaded")
+
+    def on_config_changed(self, config):
+        try:
+            self.compact_view = self.options["compact_view"]
+            logging.info(f"[iPhone-GPS] Compactview")
+        except KeyError:
+            pass
 
     def on_ready(self, agent):
         logging.info("[iPhone-GPS] Plugin ready")
@@ -114,7 +119,7 @@ class iPhoneGPS(plugins.Plugin):
     def on_ui_setup(self, ui):
         try:
             line_spacing = int(self.options['linespacing'])
-        except Exception:
+        except KeyError:
             line_spacing = self.LINE_SPACING
 
         try:
@@ -149,57 +154,91 @@ class iPhoneGPS(plugins.Plugin):
                 lon_pos = (122, 61)
                 alt_pos = (127, 71)
 
-        ui.add_element(
-            "latitude",
-            LabeledValue(
-                color=BLACK,
-                label="lat:",
-                value="-",
-                position=lat_pos,
-                label_font=fonts.Small,
-                text_font=fonts.Small,
-                label_spacing=self.LABEL_SPACING,
-            ),
-        )
-        ui.add_element(
-            "longitude",
-            LabeledValue(
-                color=BLACK,
-                label="long:",
-                value="-",
-                position=lon_pos,
-                label_font=fonts.Small,
-                text_font=fonts.Small,
-                label_spacing=self.LABEL_SPACING,
-            ),
-        )
-        ui.add_element(
-            "altitude",
-            LabeledValue(
-                color=BLACK,
-                label="alt:",
-                value="-",
-                position=alt_pos,
-                label_font=fonts.Small,
-                text_font=fonts.Small,
-                label_spacing=self.LABEL_SPACING,
-            ),
-        )
+        if self.compact_view:
+            ui.add_element(
+                "coordinates",
+                LabeledValue(
+                    color=BLACK,
+                    label="coords",
+                    value="-",
+                    position=lat_pos,
+                    label_font=fonts.Small,
+                    text_font=fonts.Small,
+                    label_spacing=self.LABEL_SPACING,
+                ),
+            )
+        else:
+            ui.add_element(
+                "latitude",
+                LabeledValue(
+                    color=BLACK,
+                    label="lat:",
+                    value="-",
+                    position=lat_pos,
+                    label_font=fonts.Small,
+                    text_font=fonts.Small,
+                    label_spacing=self.LABEL_SPACING,
+                ),
+            )
+            ui.add_element(
+                "longitude",
+                LabeledValue(
+                    color=BLACK,
+                    label="long:",
+                    value="-",
+                    position=lon_pos,
+                    label_font=fonts.Small,
+                    text_font=fonts.Small,
+                    label_spacing=self.LABEL_SPACING,
+                ),
+            )
+            ui.add_element(
+                "altitude",
+                LabeledValue(
+                    color=BLACK,
+                    label="alt:",
+                    value="-",
+                    position=alt_pos,
+                    label_font=fonts.Small,
+                    text_font=fonts.Small,
+                    label_spacing=self.LABEL_SPACING,
+                ),
+            )
 
     def on_unload(self, ui):
         with ui._lock:
-            ui.remove_element('latitude')
-            ui.remove_element('longitude')
-            ui.remove_element('altitude')
+            for element in ['latitude', 'longitude', 'altitude', 'coordinates']:
+                try:
+                    ui.remove_element(element)
+                except KeyError:
+                    pass
 
     def on_ui_update(self, ui):
         with ui._lock:
-            if self.coordinates and all([
+            if not self.coordinates or not all([
                 # avoid 0.000... measurements
                 self.coordinates["Latitude"], self.coordinates["Longitude"]
             ]):
+                return
+
+            if self.coordinates['Latitude'] < 0:
+                lat = f"{-self.coordinates['Latitude']:4.4f}S"
+            else:
+                lat = f"{self.coordinates['Latitude']:4.4f}N"
+
+            if self.coordinates['Longitude'] < 0:
+                long = f"{-self.coordinates['Longitude']:4.4f}W"
+            else:
+                long = f"{self.coordinates['Longitude']:4.4f}E"
+
+            if self.compact_view:
+                ui.set(
+                    "coordinates",
+                    f"{lat},{long} {int(self.coordinates['Altitude'])}m"
+                )
+            else:
                 # last char is sometimes not completely drawn ¯\_(ツ)_/¯
                 # using an ending-whitespace as workaround on each line
-                ui.set("latitude", f"{self.coordinates['Latitude']:.2f} ")
-                ui.set("longitude", f"{self.coordinates['Longitude']:.2f} ")
-                ui.set("altitude", f"{self.coordinates['Altitude']:.1f}m ")
+                ui.set("latitude", f"{lat} ")
+                ui.set("longitude", f"{long} ")
+                ui.set("altitude", f"{self.coordinates['Altitude']:5.1f}m ")
