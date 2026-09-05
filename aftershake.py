@@ -54,7 +54,7 @@ class afterShake(plugins.Plugin):
     # - pwnagotchi@rossmarks.uk (quickdic AND AircrackOnly)
     # - @nagy_craig (display-password)
 
-    __version__ = '1.0.1'
+    __version__ = '1.0.2'
     __license__ = 'MIT'
     __description__ = 'A plugin that handles everything after a handshake. AircrackOnly, Hashie, Quickdic, etc. All in one.'
 
@@ -112,7 +112,10 @@ class afterShake(plugins.Plugin):
             os.remove(filename)
             removed.append(filename)
 
-        gps_file = filename.replace(".pcap", ".gps.json")
+        gps_file = filename.replace(
+            ".pcapng" if filename.endswith(".pcapng") else ".pcap",
+            ".gps.json"
+        )
         if os.path.exists(gps_file):
             #head, tail = os.path.split(gps_file)
             #os.replace(gps_file, f"/root/invalid/{tail}")
@@ -127,7 +130,7 @@ class afterShake(plugins.Plugin):
         logging.info("[afterShake] Checking all files...")
         for root, dirs, files in os.walk(os.path.abspath("/root/handshakes/")):
             for file in files:
-                if file.endswith(".pcap"):
+                if file.endswith(".pcap") or file.endswith(".pcapng"):
                     filename = os.path.join(root, file)
                     hs_check = subprocess.run(('/usr/bin/aircrack-ng ' + file + ' 2>/dev/null </dev/null | awk \'/1 handshake/ {print $2,$3; exit 0}\''),
                                               shell=True, stdout=subprocess.PIPE)
@@ -192,12 +195,12 @@ class afterShake(plugins.Plugin):
                         if os.path.isfile(path_noext + '.22000'):
                             handshake_status.append('Already have {}.22000 (EAPOL)'.format(name))
                         elif self._writeEAPOL(filename):
-                            handshake_status.append('Created {}.22000 (EAPOL) from pcap'.format(name))
+                            handshake_status.append('Created {}.22000 (EAPOL) from pcap(ng)'.format(name))
 
                         if os.path.isfile(path_noext + '.16800'):
                             handshake_status.append('Already have {}.16800 (PMKID)'.format(name))
                         elif self._writePMKID(filename, access_point):
-                            handshake_status.append('Created {}.16800 (PMKID) from pcap'.format(name))
+                            handshake_status.append('Created {}.16800 (PMKID) from pcap(ng)'.format(name))
 
                         if handshake_status:
                             logging.info('[afterShake] Good news:\n\t' + '\n\t'.join(handshake_status))

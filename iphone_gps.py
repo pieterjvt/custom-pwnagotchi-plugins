@@ -29,7 +29,7 @@ from pwnagotchi.ui.view import BLACK
 
 class iPhoneGPS(plugins.Plugin):
     __author__ = "pieterjvt"
-    __version__ = "1.1.1"
+    __version__ = "1.1.2"
     __license__ = "MIT"
     __description__ = "Saves GPS coordinates whenever an handshake is captured. Uses your iPhone's GPS via website requests and Shortcuts."
     # credits to:
@@ -104,7 +104,10 @@ class iPhoneGPS(plugins.Plugin):
     def on_handshake(self, agent, filename, access_point, client_station):
         if self.running:
             if not self.stop or (self.stop and self.options.get("use_last_loc", False)):
-                gps_filename = filename.replace(".pcap", ".gps.json")
+                gps_filename = filename.replace(
+                    ".pcapng" if filename.endswith(".pcapng") else ".pcap",
+                    ".gps.json"
+                )
 
                 if self.coordinates and all([
                     # avoid 0.000... measurements
