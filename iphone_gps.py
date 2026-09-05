@@ -57,7 +57,7 @@ class iPhoneGPS(plugins.Plugin):
                     cords["Latitude"] = float(request.args.get("lat"))
                     cords["Longitude"] = float(request.args.get("lon"))
                     cords["Altitude"] = float(request.args.get("alt").replace(",", "."))
-                    cords["Updated"] = datetime.now(UTC).strftime('%Y-%m-%dT%H:%M:%S.%f')
+                    cords["Updated"] = datetime.now(UTC).isoformat()
                     cords["Accuracy"] = 10  # Arbitrary value for 10 meters but mandatory for wigle plugin
                     self.coordinates = cords
                     logging.info(f"[iPhone-GPS] Updated coordinates to: ({cords})")
