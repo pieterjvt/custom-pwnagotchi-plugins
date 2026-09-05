@@ -48,7 +48,7 @@ from pwnagotchi.ui.view import BLACK
 import pwnagotchi.ui.fonts as fonts
 
 class afterShake(plugins.Plugin):
-    __author__ = 'xentrify'
+    __author__ = 'pieterjvt'
     # credits to:
     # - junohea.mail@gmail.com (hashie-hcxpcapngtool)
     # - pwnagotchi@rossmarks.uk (quickdic AND AircrackOnly)
